@@ -42,13 +42,14 @@ code {
 }
 
 .tweetbox {
-  padding: 7px;
+  padding: 17px;
 }
 
 .tweetbox img {
   float: left;
   height: 48px;
   width: 48px;
+  margin-right: 18px;
   content:url("http://lorempixel.com/48/48");
 }
 .content {
@@ -64,5 +65,5 @@ code {
 }
 .tweet, .name {
   list-style: none;
-  color: rgb(36, 150, 237);
+  color: #1DA1F2;
 }
