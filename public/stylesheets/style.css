@@ -59,6 +59,10 @@ code {
   font-weight: bold;
   color: blue;
 }
-.random {
-  border: 1px solid black;
+.name{
+  font-weight: bold;
+}
+.tweet, .name {
+  list-style: none;
+  color: rgb(36, 150, 237);
 }
