@@ -21,11 +21,10 @@ module.exports = function (io) {
       var list = tweetBank.find( {id: parseInt(name)} );
       res.render( 'index', { tweets: list, showForm: true, username: list[0].name});
     }
-    
-  
   });
   
-  router.post('/tweets', bodyParser.urlencoded({extended: false}), function(req, res){
+  router.post('/tweets', function(req, res){
+    console.log(req)
     //console.log('reqbody', req.body);
     tweetBank.add(req.body.name, req.body.text);
     res.redirect('/');

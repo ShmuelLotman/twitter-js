@@ -13,7 +13,10 @@ function list () {
 function find (properties) {
   return _.cloneDeep(_.filter(data, properties));
 }
-
+function deleteTweet (properties) {
+  data = data.filter(a => a.id !== find(properties).id)
+  return data;
+}
 module.exports = { add: add, list: list, find: find };
 
 const randArrayEl = function(arr) {
