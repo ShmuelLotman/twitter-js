@@ -66,11 +66,6 @@ module.exports = function (io) {
     
     });
 
-
-    res.redirect('/');
-    var nam = req.body.name,
-    bod = req.body.text;
-    io.sockets.emit('newTweet', {name: nam, tweet: bod});
   });
   
   return router;
