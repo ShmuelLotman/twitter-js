@@ -5,6 +5,7 @@ const router = express.Router();
 const tweetBank = require('../tweetBank');
 const client = require('../db/index.js');
 module.exports = function (io) {
+  
   var resultQuery;
   
   var queryTweets = client.query(`select name, users.id, content from users
@@ -16,8 +17,17 @@ module.exports = function (io) {
 
 
   router.get('/', function (req, res) {
-    var tweets = resultQuery;
+    var resultQ;
+  
+    var queryTweets = client.query(`select name, users.id, content from users
+    JOIN tweets 
+    on tweets.user_id = users.id`, function(err, result) {
+    if (err) return next(err);
+    resultQ = result.rows;
+    var tweets = resultQ;
     res.render('index', { title: 'Twitter.js', tweets: tweets, showForm: true });
+  });
+    
   });
 
   router.get('/users/:name', function(req, res) {
@@ -34,27 +44,27 @@ module.exports = function (io) {
   });
   
   router.post('/tweets', function(req, res){
+      var resultQuery;
+  
+      var queryTweets = client.query(`select name, users.id, content from users
+        JOIN tweets 
+        on tweets.user_id = users.id`, function(err, result) {
+      if (err) return next(err);
+      resultQuery = result.rows;
+    });
     var existingName = resultQuery.filter( a => a.name == req.body.name);
     if(existingName.length) {
       client.query('INSERT INTO tweets(user_id, content) VALUES($1, $2)',[existingName[0].id, req.body.text], function(err, result) {
           console.log(result);
       });
     } else {
-      // add new user to <users> table
-      client.query('INSERT INTO users(name) VALUES($1)',[req.body.name], function(err, result) {   
-          console.log(result);  
-      });
 
-      var newName = queryTweets;
-      console.log(newName);
-
-      // client.query('INSERT INTO tweets(user_id, content) VALUES($1, $2)',[req.body.name, req.body.text], function(err, result) {
-      //       //console.log(result)
-      //   });
-      
-      console.log(existingName);
-      // add new tweet to <tweets> table
-       
+      client.query('INSERT INTO users(name) VALUES($1) RETURNING *',[req.body.name], function(err, result) {
+        client.query('INSERT INTO tweets(user_id, content) VALUES($1, $2) RETURNING *', [result.rows[0].id, req.body.text], function(err, result) {
+          io.sockets.emit('newTweet', {name: result.rows[0].name, tweet: req.body.text});
+          res.redirect('/');
+        })
+      })
     }
 
     res.redirect('/');
