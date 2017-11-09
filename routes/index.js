@@ -44,28 +44,28 @@ module.exports = function (io) {
   });
   
   router.post('/tweets', function(req, res){
-      var resultQuery;
-  
-      var queryTweets = client.query(`select name, users.id, content from users
+      client.query(`select name, users.id, content from users
         JOIN tweets 
         on tweets.user_id = users.id`, function(err, result) {
+        const data = result.rows.filter(a => a.name == req.body.name);
+        console.log(data)
       if (err) return next(err);
-      resultQuery = result.rows;
-    });
-    var existingName = resultQuery.filter( a => a.name == req.body.name);
-    if(existingName.length) {
-      client.query('INSERT INTO tweets(user_id, content) VALUES($1, $2)',[existingName[0].id, req.body.text], function(err, result) {
-          console.log(result);
-      });
-    } else {
-
-      client.query('INSERT INTO users(name) VALUES($1) RETURNING *',[req.body.name], function(err, result) {
-        client.query('INSERT INTO tweets(user_id, content) VALUES($1, $2) RETURNING *', [result.rows[0].id, req.body.text], function(err, result) {
-          io.sockets.emit('newTweet', {name: result.rows[0].name, tweet: req.body.text});
-          res.redirect('/');
+       if(data.length > 0) {
+        client.query('INSERT INTO tweets(user_id, content) VALUES($1, $2) RETURNING *',[data[0].id, req.body.text], function(err, result) {
+          io.sockets.emit('newTweet', result.rows[0]);
+          res.redirect('/')
+        });
+      } else {
+        client.query('INSERT INTO users(name) VALUES($1) RETURNING *',[req.body.name], function(err, result) {
+          client.query('INSERT INTO tweets(user_id, content) VALUES($1, $2) RETURNING *', [result.rows[0].id, req.body.text], function(err, result) {
+            io.sockets.emit('newTweet', {name: result.rows[0].name, tweet: req.body.text});
+            res.redirect('/')
+          })
         })
-      })
-    }
+      }
+    
+    });
+
 
     res.redirect('/');
     var nam = req.body.name,
